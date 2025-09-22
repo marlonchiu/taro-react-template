@@ -6,6 +6,7 @@ import vitePluginImp from 'vite-plugin-imp';
 import tailwindcss from 'tailwindcss';
 import { UnifiedViteWeappTailwindcssPlugin as uvtw } from 'weapp-tailwindcss/vite';
 import type { Plugin } from 'vite';
+import path from 'path';
 
 // https://taro-docs.jd.com/docs/next/config#defineconfig-辅助函数
 export default defineConfig<'vite'>(async (merge, { command, mode }) => {
@@ -29,8 +30,28 @@ export default defineConfig<'vite'>(async (merge, { command, mode }) => {
     },
     sourceRoot: 'src',
     outputRoot: 'dist',
-    plugins: ['@tarojs/plugin-html'],
-    defineConstants: {},
+    plugins: [
+      [
+        '@tarojs/plugin-http',
+        {
+          // 默认值
+          enableCookie: false,
+          disabledFormData: true,
+          disabledBlob: true
+        }
+      ],
+      [
+        '@tarojs/plugin-html',
+        {
+          // 包含 `demo-`、`van-` 的类名选择器中的 px 单位不会被解析
+          pxtransformBlackList: [/demo-/, /van-/]
+        }
+      ]
+    ],
+    defineConstants: {
+      ENABLE_COOKIE: 'false',
+      LOCATION_API_KEY: JSON.stringify('U4MBZ-3U3OQ-AHF5G-BNXOC-IKJ3O-FFFOJ')
+    },
     copy: {
       patterns: [],
       options: {}
@@ -75,12 +96,23 @@ export default defineConfig<'vite'>(async (merge, { command, mode }) => {
       type: 'vite'
     },
     mini: {
+      debugReact: true,
       postcss: {
         pxtransform: {
           enable: true,
           config: {
             selectorBlackList: ['nut-']
           }
+        },
+        url: {
+          enable: true,
+          config: {
+            limit: 1024 // 设定转换尺寸上限
+          }
+        },
+        optimizeMainPackage: {
+          enable: true,
+          exclude: []
         },
         cssModules: {
           enable: false, // 默认为 false，如需使用 css modules 功能，则设为 true
@@ -131,6 +163,9 @@ export default defineConfig<'vite'>(async (merge, { command, mode }) => {
           enable: false // 默认为 false，如需使用 css modules 功能，则设为 true
         }
       }
+    },
+    alias: {
+      '@': path.resolve(__dirname, '../src')
     }
   };
   if (process.env.NODE_ENV === 'development') {

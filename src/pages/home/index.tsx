@@ -1,0 +1,112 @@
+import { useEffect } from 'react';
+import { useSetState } from 'ahooks';
+import { View, Text, Button } from '@tarojs/components';
+import Taro, { useDidShow, useLoad } from '@tarojs/taro';
+import { PAGE, MAIN_PAGE, SUB_PAGE, TABBAR_PAGE } from '@/constants/PAGE';
+import { useAppStore } from '@/store';
+import { Button as NutButton, Popup } from '@nutui/nutui-react-taro';
+
+import { GetTest, GetTest2, GetTest3, GetTest4 } from '@/api/api';
+import { getSystemInfo } from '@/utils/tools';
+
+import './index.scss';
+
+export default function Home() {
+  const { token, SET_TOKEN, REMOVE_TOKEN, SET_STATE } = useAppStore(state => state);
+
+  const [state, setState] = useSetState({
+    show: false
+  });
+
+  useLoad(() => {
+    console.log('Page loaded.');
+  });
+
+  useDidShow(() => {
+    console.log('Page show:>> ', token);
+    console.log(
+      '当前环境:>> ',
+      process.env.NODE_ENV,
+      process.env.TARO_APP_TITLE,
+      process.env.TARO_APP_RESOURCE_URL
+    );
+    console.log('getSystemInfo:>> ', getSystemInfo());
+  });
+
+  useEffect(() => {
+    console.log('token:>> ', token);
+    console.log('TABBAR_PAGE:>> ', TABBAR_PAGE);
+    console.log('PAGE:>> ', PAGE);
+    console.log('MAIN_PAGE:>> ', MAIN_PAGE);
+    console.log('SUB_PAGE:>> ', SUB_PAGE);
+  }, []);
+
+  function handleLogin() {
+    Taro.switchTab({ url: PAGE.PERSONAL });
+  }
+
+  function handleTest(ind: number) {
+    const params = { user: 'dushuai' };
+    if (ind === 1) {
+      params['pwd'] = '123456';
+    }
+    switch (ind) {
+      case 0:
+        GetTest(params).then(res => console.log('GetTest:>> ', res));
+        break;
+      case 1:
+        GetTest2(params).then(res => console.log('GetTest:>> ', res));
+        break;
+      case 2:
+        GetTest3(params).then(res => console.log('GetTest:>> ', res));
+        break;
+      case 3:
+        GetTest4().then(res => console.log('GetTest:>> ', res));
+        break;
+    }
+  }
+
+  return (
+    <View className='index-page'>
+      <Text className='title'>Hello world! 2 ==== {token}</Text>
+      <Text>{process.env.TARO_ENV}</Text>
+      <NutButton type='primary' onClick={() => setState({ show: true })}>
+        狗东组件库
+      </NutButton>
+      <Button type='primary' onClick={() => handleTest(0)}>
+        http
+      </Button>
+      <Button type='primary' onClick={() => handleTest(1)}>
+        http post
+      </Button>
+      <Button type='primary' onClick={() => handleTest(2)}>
+        http postJSON
+      </Button>
+      <Button type='primary' onClick={() => handleTest(3)}>
+        http postERR
+      </Button>
+      <Button type='primary' onClick={() => SET_STATE({ token: '123456' })}>
+        按钮+
+      </Button>
+      <Button onClick={() => SET_TOKEN('456789')}>set</Button>
+      <Button onClick={() => REMOVE_TOKEN()}>reset</Button>
+      {/* <Button onClick={handleLogin}>按钮跳转</Button>
+      <Button onClick={() => Taro.navigateTo({ url: '/pagesUser/login/index' })}>登陆</Button>
+      <Button onClick={() => Taro.navigateTo({ url: '/pagesUser/register/index' })}>注册</Button>
+      <Button onClick={() => Taro.navigateTo({ url: '/pagesDetail/info/index' })}>info</Button>
+      <Button onClick={() => Taro.navigateTo({ url: '/pagesDetail/webview/index' })}>
+        webview
+      </Button> */}
+
+      <div className='flex items-center'>
+        <button className='w-40 h-12 bg-pink-300 text-white text-2xl'>我是按钮</button>
+        <button>2</button>
+      </div>
+
+      <Popup visible={state.show} closeOnOverlayClick={false} position='bottom'>
+        狗东弹出层
+        <div onClick={() => setState({ show: false })}>关闭</div>
+      </Popup>
+    </View>
+  );
+}
